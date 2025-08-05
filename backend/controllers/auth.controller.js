@@ -15,11 +15,7 @@ const generateTokens = (userId) => {
 };
 
 const storeRefreshToken = async (userId, refreshToken) => {
-	if (redis) {
-		await redis.set(`refresh_token:${userId}`, refreshToken, "EX", 7 * 24 * 60 * 60); // 7days
-	} else {
-		console.log('Redis not available, refresh token not stored');
-	}
+	await redis.set(`refresh_token:${userId}`, refreshToken, "EX", 7 * 24 * 60 * 60); // 7days
 };
 
 const setCookies = (res, accessToken, refreshToken) => {
@@ -93,7 +89,7 @@ export const login = async (req, res) => {
 export const logout = async (req, res) => {
 	try {
 		const refreshToken = req.cookies.refreshToken;
-		if (refreshToken && redis) {
+		if (refreshToken) {
 			const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 			await redis.del(`refresh_token:${decoded.userId}`);
 		}
@@ -117,14 +113,10 @@ export const refreshToken = async (req, res) => {
 		}
 
 		const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+		const storedToken = await redis.get(`refresh_token:${decoded.userId}`);
 
-		if (redis) {
-			const storedToken = await redis.get(`refresh_token:${decoded.userId}`);
-			if (storedToken !== refreshToken) {
-				return res.status(401).json({ message: "Invalid refresh token" });
-			}
-		} else {
-			console.log('Redis not available, skipping refresh token validation');
+		if (storedToken !== refreshToken) {
+			return res.status(401).json({ message: "Invalid refresh token" });
 		}
 
 		const accessToken = jwt.sign({ userId: decoded.userId }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" });

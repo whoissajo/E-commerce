@@ -32,7 +32,7 @@ const ProductsPage = () => {
 		const fetchAllProducts = async () => {
 			try {
 				setLoading(true);
-				const response = await axios.get("/products/all");
+				const response = await axios.get("/products");
 				setAllProducts(response.data.products);
 				setFilteredProducts(response.data.products);
 			} catch (error) {

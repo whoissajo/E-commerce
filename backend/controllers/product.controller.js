@@ -41,23 +41,12 @@ export const getFeaturedProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
 	try {
-		const { name, description, price, image, images, category } = req.body;
+		const { name, description, price, image, category } = req.body;
 
 		let cloudinaryResponse = null;
-		let additionalImages = [];
 
-		// Upload main image
 		if (image) {
 			cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
-		}
-
-		// Upload additional images
-		if (images && Array.isArray(images) && images.length > 0) {
-			const uploadPromises = images.map(img => 
-				cloudinary.uploader.upload(img, { folder: "products" })
-			);
-			const uploadResults = await Promise.all(uploadPromises);
-			additionalImages = uploadResults.map(result => result.secure_url);
 		}
 
 		const product = await Product.create({
@@ -65,89 +54,12 @@ export const createProduct = async (req, res) => {
 			description,
 			price,
 			image: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "",
-			images: additionalImages,
 			category,
 		});
 
 		res.status(201).json(product);
 	} catch (error) {
 		console.log("Error in createProduct controller", error.message);
-		res.status(500).json({ message: "Server error", error: error.message });
-	}
-};
-
-export const updateProduct = async (req, res) => {
-	try {
-		const { name, description, price, image, images, category } = req.body;
-		const productId = req.params.id;
-
-		const product = await Product.findById(productId);
-		if (!product) {
-			return res.status(404).json({ message: "Product not found" });
-		}
-
-		// Handle image updates
-		let updatedImageData = {};
-		
-		// If a new main image is provided, upload it and delete the old one
-		if (image && image !== product.image) {
-			// Delete old image from Cloudinary
-			if (product.image) {
-				const publicId = product.image.split("/").pop().split(".")[0];
-				try {
-					await cloudinary.uploader.destroy(`products/${publicId}`);
-				} catch (error) {
-					console.log("Error deleting old main image from Cloudinary:", error);
-				}
-			}
-			
-			// Upload new main image
-			const cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
-			updatedImageData.image = cloudinaryResponse.secure_url;
-		}
-
-		// If new additional images are provided, upload them and delete old ones
-		if (images && Array.isArray(images)) {
-			// Delete old additional images from Cloudinary
-			if (product.images && Array.isArray(product.images)) {
-				for (const imageUrl of product.images) {
-					const publicId = imageUrl.split("/").pop().split(".")[0];
-					try {
-						await cloudinary.uploader.destroy(`products/${publicId}`);
-					} catch (error) {
-						console.log("Error deleting old additional image from Cloudinary:", error);
-					}
-				}
-			}
-			
-			// Upload new additional images
-			if (images.length > 0) {
-				const uploadPromises = images.map(img => 
-					cloudinary.uploader.upload(img, { folder: "products" })
-				);
-				const uploadResults = await Promise.all(uploadPromises);
-				updatedImageData.images = uploadResults.map(result => result.secure_url);
-			} else {
-				updatedImageData.images = [];
-			}
-		}
-
-		// Update product with new data
-		const updatedProduct = await Product.findByIdAndUpdate(
-			productId,
-			{ 
-				name, 
-				description, 
-				price, 
-				category,
-				...updatedImageData
-			},
-			{ new: true }
-		);
-
-		res.json(updatedProduct);
-	} catch (error) {
-		console.log("Error in updateProduct controller", error.message);
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };
@@ -160,27 +72,13 @@ export const deleteProduct = async (req, res) => {
 			return res.status(404).json({ message: "Product not found" });
 		}
 
-		// Delete main image from Cloudinary
 		if (product.image) {
 			const publicId = product.image.split("/").pop().split(".")[0];
 			try {
 				await cloudinary.uploader.destroy(`products/${publicId}`);
-				console.log("deleted main image from cloudinary");
+				console.log("deleted image from cloduinary");
 			} catch (error) {
-				console.log("error deleting main image from cloudinary", error);
-			}
-		}
-
-		// Delete additional images from Cloudinary
-		if (product.images && Array.isArray(product.images)) {
-			for (const imageUrl of product.images) {
-				const publicId = imageUrl.split("/").pop().split(".")[0];
-				try {
-					await cloudinary.uploader.destroy(`products/${publicId}`);
-					console.log(`deleted additional image from cloudinary: ${publicId}`);
-				} catch (error) {
-					console.log("error deleting additional image from cloudinary", error);
-				}
+				console.log("error deleting image from cloduinary", error);
 			}
 		}
 

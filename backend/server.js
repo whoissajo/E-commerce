@@ -11,7 +11,6 @@ import paymentRoutes from "./routes/payment.route.js";
 import analyticsRoutes from "./routes/analytics.route.js";
 
 import { connectDB } from "./lib/db.js";
-import { createAdminUser } from "./lib/createAdminUser.js";
 
 dotenv.config();
 
@@ -38,8 +37,7 @@ if (process.env.NODE_ENV === "production") {
 	});
 }
 
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
 	console.log("Server is running on http://localhost:" + PORT);
-	await connectDB();
-	await createAdminUser();
+	connectDB();
 });
