@@ -41,19 +41,44 @@ export const getFeaturedProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
 	try {
+<<<<<<< HEAD
 		const { name, description, price, image, category } = req.body;
 
 		let cloudinaryResponse = null;
 
+=======
+		const { name, description, price, image, images, category } = req.body;
+
+		let cloudinaryResponse = null;
+		let additionalImages = [];
+
+		// Upload main image
+>>>>>>> 18d9e67 (Initial commit (without .env, with .env.example))
 		if (image) {
 			cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
 		}
 
+<<<<<<< HEAD
+=======
+		// Upload additional images
+		if (images && Array.isArray(images) && images.length > 0) {
+			const uploadPromises = images.map(img => 
+				cloudinary.uploader.upload(img, { folder: "products" })
+			);
+			const uploadResults = await Promise.all(uploadPromises);
+			additionalImages = uploadResults.map(result => result.secure_url);
+		}
+
+>>>>>>> 18d9e67 (Initial commit (without .env, with .env.example))
 		const product = await Product.create({
 			name,
 			description,
 			price,
 			image: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "",
+<<<<<<< HEAD
+=======
+			images: additionalImages,
+>>>>>>> 18d9e67 (Initial commit (without .env, with .env.example))
 			category,
 		});
 
@@ -64,6 +89,85 @@ export const createProduct = async (req, res) => {
 	}
 };
 
+<<<<<<< HEAD
+=======
+export const updateProduct = async (req, res) => {
+	try {
+		const { name, description, price, image, images, category } = req.body;
+		const productId = req.params.id;
+
+		const product = await Product.findById(productId);
+		if (!product) {
+			return res.status(404).json({ message: "Product not found" });
+		}
+
+		// Handle image updates
+		let updatedImageData = {};
+		
+		// If a new main image is provided, upload it and delete the old one
+		if (image && image !== product.image) {
+			// Delete old image from Cloudinary
+			if (product.image) {
+				const publicId = product.image.split("/").pop().split(".")[0];
+				try {
+					await cloudinary.uploader.destroy(`products/${publicId}`);
+				} catch (error) {
+					console.log("Error deleting old main image from Cloudinary:", error);
+				}
+			}
+			
+			// Upload new main image
+			const cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
+			updatedImageData.image = cloudinaryResponse.secure_url;
+		}
+
+		// If new additional images are provided, upload them and delete old ones
+		if (images && Array.isArray(images)) {
+			// Delete old additional images from Cloudinary
+			if (product.images && Array.isArray(product.images)) {
+				for (const imageUrl of product.images) {
+					const publicId = imageUrl.split("/").pop().split(".")[0];
+					try {
+						await cloudinary.uploader.destroy(`products/${publicId}`);
+					} catch (error) {
+						console.log("Error deleting old additional image from Cloudinary:", error);
+					}
+				}
+			}
+			
+			// Upload new additional images
+			if (images.length > 0) {
+				const uploadPromises = images.map(img => 
+					cloudinary.uploader.upload(img, { folder: "products" })
+				);
+				const uploadResults = await Promise.all(uploadPromises);
+				updatedImageData.images = uploadResults.map(result => result.secure_url);
+			} else {
+				updatedImageData.images = [];
+			}
+		}
+
+		// Update product with new data
+		const updatedProduct = await Product.findByIdAndUpdate(
+			productId,
+			{ 
+				name, 
+				description, 
+				price, 
+				category,
+				...updatedImageData
+			},
+			{ new: true }
+		);
+
+		res.json(updatedProduct);
+	} catch (error) {
+		console.log("Error in updateProduct controller", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
+>>>>>>> 18d9e67 (Initial commit (without .env, with .env.example))
 export const deleteProduct = async (req, res) => {
 	try {
 		const product = await Product.findById(req.params.id);
@@ -72,13 +176,36 @@ export const deleteProduct = async (req, res) => {
 			return res.status(404).json({ message: "Product not found" });
 		}
 
+<<<<<<< HEAD
+=======
+		// Delete main image from Cloudinary
+>>>>>>> 18d9e67 (Initial commit (without .env, with .env.example))
 		if (product.image) {
 			const publicId = product.image.split("/").pop().split(".")[0];
 			try {
 				await cloudinary.uploader.destroy(`products/${publicId}`);
+<<<<<<< HEAD
 				console.log("deleted image from cloduinary");
 			} catch (error) {
 				console.log("error deleting image from cloduinary", error);
+=======
+				console.log("deleted main image from cloudinary");
+			} catch (error) {
+				console.log("error deleting main image from cloudinary", error);
+			}
+		}
+
+		// Delete additional images from Cloudinary
+		if (product.images && Array.isArray(product.images)) {
+			for (const imageUrl of product.images) {
+				const publicId = imageUrl.split("/").pop().split(".")[0];
+				try {
+					await cloudinary.uploader.destroy(`products/${publicId}`);
+					console.log(`deleted additional image from cloudinary: ${publicId}`);
+				} catch (error) {
+					console.log("error deleting additional image from cloudinary", error);
+				}
+>>>>>>> 18d9e67 (Initial commit (without .env, with .env.example))
 			}
 		}
 

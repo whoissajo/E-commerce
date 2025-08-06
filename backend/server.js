@@ -11,6 +11,10 @@ import paymentRoutes from "./routes/payment.route.js";
 import analyticsRoutes from "./routes/analytics.route.js";
 
 import { connectDB } from "./lib/db.js";
+<<<<<<< HEAD
+=======
+import { createAdminUser } from "./lib/createAdminUser.js";
+>>>>>>> 18d9e67 (Initial commit (without .env, with .env.example))
 
 dotenv.config();
 
@@ -37,7 +41,14 @@ if (process.env.NODE_ENV === "production") {
 	});
 }
 
+<<<<<<< HEAD
 app.listen(PORT, () => {
 	console.log("Server is running on http://localhost:" + PORT);
 	connectDB();
+=======
+app.listen(PORT, async () => {
+	console.log("Server is running on http://localhost:" + PORT);
+	await connectDB();
+	await createAdminUser();
+>>>>>>> 18d9e67 (Initial commit (without .env, with .env.example))
 });

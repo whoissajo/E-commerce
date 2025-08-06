@@ -19,6 +19,13 @@ const productSchema = new mongoose.Schema(
 			type: String,
 			required: [true, "Image is required"],
 		},
+<<<<<<< HEAD
+=======
+		images: {
+			type: [String],
+			default: [],
+		},
+>>>>>>> 18d9e67 (Initial commit (without .env, with .env.example))
 		category: {
 			type: String,
 			required: true,
@@ -27,6 +34,44 @@ const productSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false,
 		},
+<<<<<<< HEAD
+=======
+		stock: {
+			type: Number,
+			default: 100,
+			min: 0,
+		},
+		colors: {
+			type: [String],
+			default: ["Black", "White"],
+		},
+		sizes: {
+			type: [String],
+			default: [],
+		},
+		rating: {
+			type: Number,
+			default: 4.5,
+			min: 0,
+			max: 5,
+		},
+		reviewCount: {
+			type: Number,
+			default: 0,
+		},
+		brand: {
+			type: String,
+			default: "Modern Store",
+		},
+		weight: {
+			type: String,
+			default: "N/A",
+		},
+		dimensions: {
+			type: String,
+			default: "N/A",
+		},
+>>>>>>> 18d9e67 (Initial commit (without .env, with .env.example))
 	},
 	{ timestamps: true }
 );
